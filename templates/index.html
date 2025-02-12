@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      /* Fix the background image path - use relative path from your static folder */
+      background: url('../static/uploads/bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #000; /* Fallback color */
+      margin: 0;
+      padding: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+.form-container {
+    background: rgba(0, 0, 0, 0.5); /* Darker transparent background */
+    padding: 20px;
+    border-radius: 10px;
+}
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 24, 19, 0.8);
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      z-index: 2;
+    }
+
+    h1 {
+      text-align: center;
+      color: #CD953D;
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      margin-bottom: 2rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .card {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: clamp(1rem, 3vw, 2rem);
+      background: rgba(70, 68, 102, 0.3);
+      backdrop-filter: blur(12px);
+      border-radius: 1rem;
+      border: 1px solid rgba(205, 149, 61, 0.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(205, 149, 61, 0.3);
+      border-radius: 0.75rem;
+      padding: clamp(1rem, 3vw, 2rem);
+      margin-bottom: 1.5rem;
+      background: rgba(30, 31, 56, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      transform: scale(1.02);
+      border-color: rgba(205, 149, 61, 0.5);
+      background: rgba(30, 31, 56, 0.4);
+    }
+
+    .preview-container {
+      height: clamp(200px, 40vh, 256px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+      color: #CD953D;
+    }
+
+    .preview-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 0.5rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: clamp(0.75rem, 2vw, 1rem);
+      border: none;
+      border-radius: 0.75rem;
+      font-size: clamp(0.875rem, 2vw, 1rem);
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: #CD953D;
+      color: white;
+      margin-top: 1rem;
+    }
+
+    .btn-primary:hover {
+      background: #995E2A;
+    }
+
+    .btn-secondary {
+      background: rgba(30, 31, 56, 0.8);
+      color: #CD953D;
+      margin-top: 1rem;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(70, 68, 102, 0.8);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .input {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(30, 31, 56, 0.5);
+      border: 1px solid rgba(205, 149, 61, 0.3);
+      border-radius: 0.75rem;
+      color: white;
+      margin: 1rem 0;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: #CD953D;
+    }
+
+    .input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 24, 19, 0.8);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .loading-content {
+      padding: 2rem;
+      background: rgba(30, 31, 56, 0.3);
+      backdrop-filter: blur(12px);
+      border-radius: 1rem;
+      border: 1px solid rgba(205, 149, 61, 0.2);
+      text-align: center;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(205, 149, 61, 0.3);
+      border-top-color: #CD953D;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none;
+    }
+    .results-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .results-container img {
+      width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+    }
+
+    /* Mobile-specific adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0.5rem;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .btn {
+        padding: 0.75rem;
+      }
+
+      .preview-container {
+        height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Face Recognition Portal</h1>
+    
+    <div class="card">
+      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <div class="preview-container">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Click to upload or drag and drop</p>
+        </div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden" accept="image/*">
+      <button class="btn btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        Take Photo
+      </button>
+
+      <input type="email" class="input" placeholder="Enter your email">
+
+      <button class="btn btn-primary" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        Process Image
+      </button>
+    </div>
+  </div>
+
+  <div class="loading hidden">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p style="color: #CD953D">Processing...</p>
+    </div>
+  </div>
+</body>
+
+
+<script>
+   document.addEventListener('DOMContentLoaded', () => {
+  // DOM Elements
+  const fileInput = document.getElementById('fileInput');
+  const uploadArea = document.querySelector('.upload-area');
+  const previewContainer = document.querySelector('.preview-container');
+  const takePhotoBtn = document.querySelector('.btn-secondary');
+  const processBtn = document.querySelector('.btn-primary');
+  const emailInput = document.querySelector('input[type="email"]');
+  const loadingScreen = document.querySelector('.loading');
+
+  let stream = null;
+  let imageFile = null;
+
+  // Drag and drop functionality
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#CD953D';
+  });
+
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = 'rgba(205, 149, 61, 0.3)';
+  });
+
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'rgba(205, 149, 61, 0.3)';
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleImageUpload(file);
+    }
+  });
+
+  // File input change handler
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  });
+
+  // Handle image upload and processing
+  async function handleImageUpload(file) {
+    imageFile = file;
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      previewContainer.innerHTML = `
+        <img src="${e.target.result}" alt="Preview">
+        <p>${file.name}</p>
+      `;
+      updateProcessButton();
+    };
+    
+    reader.readAsDataURL(file);
+  }
+
+  // Camera functionality
+  // Replace the existing camera functionality with this:
+let webrtcSupport = false;
+
+// Check WebRTC support
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    webrtcSupport = true;
+}
+
+takePhotoBtn.addEventListener('click', async () => {
+    if (!webrtcSupport) {
+        alert('Your browser does not support camera access');
+        return;
+    }
+
+    if (!stream) {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
+            
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.playsInline = true;
+            
+            previewContainer.innerHTML = '';
+            previewContainer.appendChild(video);
+            
+            // Wait for video to be ready
+            await video.play();
+            
+            takePhotoBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19 4v16H5V4h3l2-2h4l2 2h3z"/>
+                </svg>
+                Capture Photo
+            `;
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            alert('Unable to access camera. Please check permissions and ensure no other app is using it.');
+        }
+    } else {
+        const video = previewContainer.querySelector('video');
+        if (!video) return;
+
+        // Create canvas with video dimensions
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        
+        // Get base64 image data
+        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Stop camera after capture
+        stopCamera();
+        
+        // Show loading
+        loadingScreen.classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/capture', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: imageData })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to process captured image');
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                handleMatchedImages(result.matched_images);
+                
+                // Show preview of captured image
+                previewContainer.innerHTML = `
+                    <img src="${imageData}" alt="Captured photo">
+                    <p>Captured photo</p>
+                `;
+            } else {
+                throw new Error(result.error || 'Processing failed');
+            }
+        } catch (error) {
+            console.error('Error processing captured image:', error);
+            alert('Failed to process captured image. Please try again.');
+        } finally {
+            loadingScreen.classList.add('hidden');
+        }
+    }
+});
+
+  // Display matched images
+  function handleMatchedImages(matchedImages) {
+    const resultsContainer = document.createElement('div');
+    resultsContainer.className = 'results-container';
+    resultsContainer.style.marginTop = '1rem';
+
+    if (matchedImages && matchedImages.length > 0) {
+      matchedImages.forEach(imgBase64 => {
+        const img = document.createElement('img');
+        img.src = `data:image/jpeg;base64,${imgBase64.trim()}`;
+
+        img.style.maxWidth = '200px';
+        img.style.margin = '0.5rem';
+        img.style.borderRadius = '0.5rem';
+        resultsContainer.appendChild(img);
+      });
+    } else {
+      resultsContainer.innerHTML = '<p style="color: #CD953D">No matching faces found.</p>';
+    }
+
+    // Add results after the card
+    document.querySelector('.card').appendChild(resultsContainer);
+  }
+
+  // Email validation
+  emailInput.addEventListener('input', updateProcessButton);
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // Update process button state
+  function updateProcessButton() {
+    processBtn.disabled = !imageFile || !isValidEmail(emailInput.value);
+  }
+
+  // Handle form submission
+  processBtn.addEventListener('click', async () => {
+    if (!imageFile || !isValidEmail(emailInput.value)) return;
+
+    loadingScreen.classList.remove('hidden');
+    
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    formData.append('email', emailInput.value);
+    formData.append('send_email', 'true');
+
+    try {
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Image processing failed');
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        handleMatchedImages(result.matched_images);
+        alert('Image processed successfully! Check your email for results.');
+      } else {
+        throw new Error(result.error || 'Processing failed');
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      alert('Failed to process image. Please try again.');
+    } finally {
+      loadingScreen.classList.add('hidden');
+    }
+  });
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', stopCamera);
+});
+</script>
+</html>
